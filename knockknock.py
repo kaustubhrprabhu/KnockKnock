@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests
 import threading
 import argparse
@@ -16,21 +18,15 @@ class KnockKnock:
     paths = None
     found = []
 
-    def __init__(self, url:str, useThreads:bool) -> None:
-        self.url = url
-        self.useThreads = useThreads
+    def __init__(self, url:str) -> None:
+        self.url = self.validate_url(url)
         self.load_paths()
-        self.print_banner()
 
-    def print_banner(self):
-        print(f"""{self.cred}
-                                                  
-        █▄▀ █▄░█ █▀█ █▀▀ █▄▀ █▄▀ █▄░█ █▀█ █▀▀ █▄▀
-        █░█ █░▀█ █▄█ █▄▄ █░█ █░█ █░▀█ █▄█ █▄▄ █░█
-        
-        🔥 version 0.1 made by Kaustubh Prabhu 🔥
-              
-        {self.cend}""")
+    def validate_url(self, url):
+        valid_url = url.removesuffix('/')
+        if url[:4] != 'http':
+            valid_url = 'http://' + url
+        return valid_url
     
     def load_paths(self):
         try:
@@ -38,6 +34,7 @@ class KnockKnock:
                 self.paths = file.read().splitlines()
         except IOError:
             print(f'{self.cred} paths.txt file is missing!{self.cend}')
+            sys.exit(1)
     
     def scan(self, path):
         full_url = self.url + path
@@ -52,41 +49,52 @@ class KnockKnock:
         except requests.exceptions.RequestException:
             pass
     
-    def start(self):
-        if self.useThreads:
-            threads = []
-            for path in self.paths:
-                thread = threading.Thread(target=self.scan, args=(path,))
-                threads.append(thread)
-                thread.start()
-            for t in threads:
-                t.join()
-        else:
-            for path in self.paths:
+    def run_single_thread(self):
+        print(f'{self.cgreen}Session started...{self.cend}\n')
+        for path in self.paths:
+            try:
                 self.scan(path)
-        print(f'\n\t{self.cyellowbg} Total found: {len(self.found)} {self.cend}\n')
+            except KeyboardInterrupt:
+                print(f'\n{self.cred}Session terminated{self.cend}')
+                break
+    
+    def run_multi_thread(self):
+        print(f'{self.cgreen}Session started...{self.cend}\n')
+        threads = []
+        for path in self.paths:
+            thread = threading.Thread(target=self.scan, args=(path,))
+            threads.append(thread)
+            thread.start()
+        for t in threads:
+            t.join()
+    
+    def result(self):
+        print(f'\n\t{self.cyellowbg} Total found: {len(self.found)} {self.cend}')
         if self.found:
-            for link in self.found:
-                print(f'\t{self.cgreenbg} {link} {self.cend}')
+            for url in self.found:
+                print(f'\t{self.cgreen}{url}{self.cend}')
 
 
 if __name__ == '__main__':
-    cend = '\33[0m'
-    cred = '\33[91m'
-    cgreen = '\33[92m'
-    cyellow = '\33[93m'
-    credbg = '\33[30;41m'
-    cgreenbg = '\33[30;42m'
-    cyellowbg = '\33[30;43m'
+    print('\33[91m' + '''
+    
+        █▄▀ █▄░█ █▀█ █▀▀ █▄▀ █▄▀ █▄░█ █▀█ █▀▀ █▄▀
+        █░█ █░▀█ █▄█ █▄▄ █░█ █░█ █░▀█ █▄█ █▄▄ █░█
 
-    parser = argparse.ArgumentParser(prog='knockknock')
+        🔥 v0.1.1 made by Kaustubh Prabhu 🔥
+          
+    ''' + '\33[0m')
+
+    parser = argparse.ArgumentParser()
     parser.add_argument('url', type=str, help='the base url to search for')
     parser.add_argument('-f', '--fast', help='uses multithreading', dest='fast', action='store_true')
     args = parser.parse_args()
 
-    try:
-        knockknock = KnockKnock(args.url, args.fast)
-        knockknock.start()
-    except KeyboardInterrupt:
-        print(f'\n\t{cred}Session terminated{cend}\n\tThank you for using KnockKnock')
-        sys.exit(1)
+    knockknock = KnockKnock(args.url)
+    
+    if args.fast:
+        knockknock.run_multi_thread()
+    else:
+        knockknock.run_single_thread()
+    
+    knockknock.result()

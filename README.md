@@ -10,13 +10,13 @@ $ pip install -r requirements.txt
 ## Usage
 ```bash
 # Check all paths
-$ python knockknock.py https://example.com
+$ python3 knockknock.py https://example.com
 
 # Check all paths with threads
-$ python knockknock.py https://example.com --fast
+$ python3 knockknock.py https://example.com --fast
 
 # Help
-$ python knockknock.py -h
+$ python3 knockknock.py -h
 ```
 
 ## Features
