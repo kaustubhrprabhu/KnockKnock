@@ -1,37 +1,69 @@
 # KnockKnock
-KnockKnock is a Python script to find admin panel of a website. (Illegal use is strictly prohibited. Make sure you use this tool responsibly.)
+
+![GitHub release (with filter)](https://img.shields.io/github/v/release/kaustubhrprabhu/KnockKnock?style=flat-square&color=green)
+![Static Badge](https://img.shields.io/badge/python-3-blue?style=flat-square)
+
+
+**KnockKnock is a Python script to find admin panel of a website**
+
+> [!WARNING]
+> This tool is only for educational purpose, developer is not responsible for any misuse or illegal activities.
+
 
 ## Features
-- Multiplatform
-- Multithreaded
-- Random User-Agents
+
+- Fast (Multithreaded)
+- Random user-agents
 - Proxy
 - Big path list
 
-More features are coming soon
 
 ## Requirements
-```bash
-# Install requirements
-$ pip3 install -r requirements.txt
-```
+
+1. Make sure you have python3 and pip3 installed on your device.
+
+2. Install the requirements:
+
+    ```sh
+    pip3 install -r requirements.txt
+    ```
+
 
 ## Usage
-```bash
-# Check all paths
-$ python3 knockknock.py http://example.com
 
-# Check all paths with threads
-$ python3 knockknock.py http://example.com -f
+Start the scan:
 
-# Check all paths with random user-agent
-$ python3 knockknock.py http://example.com -r
-
-# Use HTTP(S) or SOCKS(4/5) proxy
-$ python3 knockknock.py http://example.com --proxy http://127.0.0.1:8080
-# OR
-$ python3 knockknock.py http://example.com --proxy socks5h://127.0.0.1:8080
-
-# Help
-$ python3 knockknock.py -h
+```sh
+python3 knockknock.py http://example.com
 ```
+
+## Options
+
+- `-f` or `--fast` to enable multithreads:
+
+    ```sh
+    python3 knockknock.py http://example.com --fast
+    ```
+
+- `-r` or `--random-agent` to enable random user-agents:
+
+    ```sh
+    python3 knockknock.py http://example.com --random-agent
+    ```
+
+- `-p` or `--proxy` to use HTTP(s) or SOCKS(4/5) proxy:
+
+    ```sh
+    python3 knockknock.py http://example.com --proxy http://127.0.0.1:8080
+    ```
+
+    or
+
+    ```sh
+    python3 knockknock.py http://example.com --proxy socks5://127.0.0.1:8080
+    ```
+
+
+## License
+
+[MIT](LICENSE) © [Kaustubh Prabhu](https://github.com/kaustubhrprabhu)
