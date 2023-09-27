@@ -24,7 +24,6 @@ class KnockKnock:
     agents = None
     total_found = 0
     total_scanned = 0
-    scan_errors = 0
 
     def __init__(self, url:str, multithread:bool, random_agent:bool, proxy:str) -> None:
         self.get_paths()
@@ -95,21 +94,18 @@ class KnockKnock:
         full_url = self.url + path
         if self.random_agent:
             self.headers = {'user-agent': random.choice(self.agents)}
+        with self.print_lock_:
+            sys.stdout.write(f'\x1b[1K\r{self.cyellow}-->{self.cend} {full_url}')
         try:
             r = requests.get(full_url, timeout=self.timeout, headers=self.headers, proxies=self.proxies)
         except requests.exceptions.RequestException:
-            self.scan_errors += 1
-            with self.print_lock_:
-                sys.stdout.write(f'\x1b[1K\r{self.cyellow}[!]{self.cend} {full_url}')
+            pass
         else:
             self.total_scanned += 1
             if r.status_code == 200:
                 self.total_found += 1
                 with self.print_lock_:
-                    sys.stdout.write(f'\x1b[1K\r{self.cgreen}[+]{self.cend} {full_url}\n')
-            else:
-                with self.print_lock_:
-                    sys.stdout.write(f'\x1b[1K\r{self.cred}[-]{self.cend} {full_url}')
+                    sys.stdout.write(f'\x1b[1K\r{self.cgreen}==>{self.cend} {full_url}\n')
 
     def run_scan(self):
         print(f'{self.cgreenbg} Session started... {self.cend}\n')
@@ -126,25 +122,24 @@ class KnockKnock:
             else:
                 for path in self.paths:
                     self.scan(path)
-            print(f'\n\n{self.cgreenbg} Session completed! {self.cend}')
+            print(f'\x1b[1K\r\n{self.cgreenbg} Session completed! {self.cend}')
             print(f'\t╟═══ {self.cyellow}Total found:{self.cend} {self.total_found}')
-            print(f'\t╟═══ {self.cyellow}Total scanned:{self.cend} {self.total_scanned}')
-            print(f'\t╚═══ {self.cyellow}Unable to scan (due to some errors):{self.cend} {self.scan_errors}')
+            print(f'\t╚═══ {self.cyellow}Total scanned:{self.cend} {self.total_scanned} out of {len(self.paths)}')
         except KeyboardInterrupt:
             sys.stdout.write(f'\x1b[1K\r\n{self.cred}Session canceled{self.cend}\n\x1b[1K\r')
             sys.exit(1)
 
 
 if __name__ == '__main__':
-    print('\33[93m' + '''
+    print('''
     
-        █▄▀ █▄░█ █▀█ █▀▀ █▄▀ █▄▀ █▄░█ █▀█ █▀▀ █▄▀
-        █░█ █░▀█ █▄█ █▄▄ █░█ █░█ █░▀█ █▄█ █▄▄ █░█
+        \33[93m█▄▀ █▄░█ █▀█ █▀▀ █▄▀ \33[91m█▄▀ █▄░█ █▀█ █▀▀ █▄▀
+        \33[93m█░█ █░▀█ █▄█ █▄▄ █░█ \33[91m█░█ █░▀█ █▄█ █▄▄ █░█\33[93m
 
-            🔥 v0.3 made by Kaustubh Prabhu 🔥
+            🔥 v0.3.1 made by Kaustubh Prabhu 🔥
     [https://github.com/kaustubhrprabhu/KnockKnock.git]
           
-    ''' + '\33[0m')
+    \33[0m''')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('url', type=str, help='target url (eg. http://example.com)')
