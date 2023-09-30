@@ -15,6 +15,7 @@ class KnockKnock:
     cgreenbg = '\33[30;42m'
     cyellowbg = '\33[30;43m'
 
+    session = requests.Session()
     timeout = 5
     headers = None
     proxies = None
@@ -24,6 +25,7 @@ class KnockKnock:
     agents = None
     total_found = 0
     total_scanned = 0
+    timeout_errors = 0
 
     def __init__(self, url:str, multithread:bool, random_agent:bool, proxy:str) -> None:
         self.get_paths()
@@ -32,6 +34,7 @@ class KnockKnock:
         self.url = self.check_url(url)
         if proxy:
             self.proxies = self.check_proxy(proxy)
+            self.session.proxies.update(self.proxies)
         self.multithread = multithread
         self.random_agent = random_agent
     
@@ -57,9 +60,9 @@ class KnockKnock:
             print(f'\t╚═══ Check your network connection')
             sys.exit(1)
         except KeyboardInterrupt:
-            print(f'\x1b[1K\r\n{self.cred}Session canceled{self.cend}\n\x1b[1K\r')
+            print(f'\x1b[1K\r\n{self.cred}Program terminated{self.cend}\n\x1b[1K\r')
             sys.exit(1)
-        print(f'\x1b[1K\r{self.cgreen}Valid:{self.cend} {valid_url}\n')
+        print(f'\x1b[1K\r{self.cgreen}[✓]{self.cend} URL\n')
         return valid_url
     
     def check_proxy(self, proxy):
@@ -77,9 +80,9 @@ class KnockKnock:
             print(f'\t╚═══ Check your network connection')
             sys.exit(1)
         except KeyboardInterrupt:
-            print(f'\x1b[1K\r\n{self.cred}Session canceled{self.cend}\n\x1b[1K\r')
+            print(f'\x1b[1K\r\n{self.cred}Program terminated{self.cend}\n\x1b[1K\r')
             sys.exit(1)
-        print(f'\x1b[1K\r{self.cgreen}Valid:{self.cend} {proxy}\n')
+        print(f'\x1b[1K\r{self.cgreen}[✓]{self.cend} Proxy\n')
         return proxies
     
     def get_paths(self):
@@ -94,10 +97,10 @@ class KnockKnock:
         full_url = self.url + path
         if self.random_agent:
             self.headers = {'user-agent': random.choice(self.agents)}
-        with self.print_lock_:
-            sys.stdout.write(f'\x1b[1K\r{self.cyellow}-->{self.cend} {full_url}')
         try:
-            r = requests.get(full_url, timeout=self.timeout, headers=self.headers, proxies=self.proxies)
+            r = self.session.get(full_url, headers=self.headers, timeout=self.timeout)
+        except requests.exceptions.Timeout:
+            self.timeout_errors += 1
         except requests.exceptions.RequestException:
             pass
         else:
@@ -105,7 +108,10 @@ class KnockKnock:
             if r.status_code == 200:
                 self.total_found += 1
                 with self.print_lock_:
-                    sys.stdout.write(f'\x1b[1K\r{self.cgreen}==>{self.cend} {full_url}\n')
+                    sys.stdout.write(f'\x1b[1K\r{self.cgreen}-->{self.cend} {full_url}\n')
+            else:
+                with self.print_lock_:
+                    sys.stdout.write(f'\x1b[1K\r{self.cred}-->{self.cend} {full_url}')
 
     def run_scan(self):
         print(f'{self.cgreenbg} Session started... {self.cend}\n')
@@ -124,7 +130,8 @@ class KnockKnock:
                     self.scan(path)
             print(f'\x1b[1K\r\n{self.cgreenbg} Session completed! {self.cend}')
             print(f'\t╟═══ {self.cyellow}Total found:{self.cend} {self.total_found}')
-            print(f'\t╚═══ {self.cyellow}Total scanned:{self.cend} {self.total_scanned} out of {len(self.paths)}')
+            print(f'\t╟═══ {self.cyellow}Total scanned:{self.cend} {self.total_scanned} out of {len(self.paths)}')
+            print(f'\t╚═══ {self.cyellow}Timeout errors:{self.cend} {self.timeout_errors}')
         except KeyboardInterrupt:
             sys.stdout.write(f'\x1b[1K\r\n{self.cred}Session canceled{self.cend}\n\x1b[1K\r')
             sys.exit(1)
@@ -136,7 +143,7 @@ if __name__ == '__main__':
         \33[93m█▄▀ █▄░█ █▀█ █▀▀ █▄▀ \33[91m█▄▀ █▄░█ █▀█ █▀▀ █▄▀
         \33[93m█░█ █░▀█ █▄█ █▄▄ █░█ \33[91m█░█ █░▀█ █▄█ █▄▄ █░█\33[93m
 
-            🔥 v0.3.1 made by Kaustubh Prabhu 🔥
+            🔥 v0.4 made by Kaustubh Prabhu 🔥
     [https://github.com/kaustubhrprabhu/KnockKnock.git]
           
     \33[0m''')
